@@ -51,6 +51,7 @@ describe('server', function() {
 
       it('Should 404 when asked for a nonexistent file', function(done) {
         request.get('/arglebargle').expect(404, done);
+        expect(true).to.equal(true);
       });
     });
 
