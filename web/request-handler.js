@@ -6,7 +6,7 @@ var http = require('http');
 var mime = require('mime');
 var url = require('url');
 
-exports.handleRequest = function (req, res) {
+exports.handleRequest = (req, res) => {
   if (req.method === 'GET') {
     handleGet(req, res);
   } else if (req.method === 'POST') {
@@ -14,6 +14,29 @@ exports.handleRequest = function (req, res) {
   }
 
   // res.end(archive.paths.list);
+};
+
+// Re-renders the index.html page.
+var init = (request, response) => {
+  var requestUrl = url.parse(request.url).pathname; // directory in root folder
+  var filename = path.join(process.cwd(), requestUrl); // domain name + directory (ex: /web/public/index.html)
+
+  if (fs.statSync(filename).isDirectory()) {
+    filename = filename + 'web/public/index.html'; // ip/web/public/index.html
+  }
+
+  fs.readFile(filename, 'binary', function(err, file) {
+    if (err) {
+      response.writeHead(500, {'Content-Type': 'text/plain'});
+      response.write(`${err} \n`);
+      response.end();
+    } else {
+    // Load file into response
+      response.writeHead(302, {'Content-Type': mime.lookup(filename)});
+      response.write(file, 'binary');
+      response.end();
+    }
+  });
 };
 
 // get local directory and render it
@@ -50,22 +73,26 @@ var handleGet = (request, response) => {
   });
 };
 
-
 var handlePost = (request, response) => {
   var inputUrl;
 
-  request.on('data', function(data) {
+  // retrieves URL from form
+  request.on('data', data => {
     inputUrl = data.toString().slice(4);
   });
 
-  request.on('end', function() {
-    response.write(inputUrl);
-    response.end();
+  request.on('end', () => {
+    fs.appendFile('archives/sites.txt', `${inputUrl}\n`, function(err) {
+    // fs.appendFile('test/testdata/sites.txt', `${inputUrl}\n`, function(err) {
+      if (err) {
+        response.write(`${err} \n`);
+      }
+
+      init(request, response);
+    });
   });
-
+  
 };
-
-
 
 
 

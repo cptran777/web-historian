@@ -9,8 +9,10 @@ var initialize = require('../web/initialize.js');
 initialize(path.join(__dirname, '/testdata'));
 
 archive.initialize({
-  archivedSites: path.join(__dirname, '/testdata/sites'),
-  list: path.join(__dirname, '/testdata/sites.txt')
+  // archivedSites: path.join(__dirname, '/testdata/sites'),
+  // list: path.join(__dirname, '/testdata/sites.txt')
+  archivedSites: path.join(__dirname, '../archives/sites'),
+  list: path.join(__dirname, '../archives/sites.txt')
 });
 
 var request = supertest.agent(server);
