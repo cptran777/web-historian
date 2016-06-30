@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
+var getHtml = require('request');
 
 /*****************************************************************************************
   You will need to reuse the same paths many times over in the course of this sprint.
@@ -36,9 +37,9 @@ exports.readListOfUrls = (callback) => {
 };
 
 // Check list to see if URL is in the list
-exports.isUrlInList = function(string, callback) {
+exports.isUrlInList = function(url, callback) {
   exports.readListOfUrls(function(array) {
-    if (array.indexOf(string) !== -1) {
+    if (array.indexOf(url) !== -1) {
       callback(true);
     } else {
       callback(false);
@@ -47,9 +48,9 @@ exports.isUrlInList = function(string, callback) {
 };
 
 // Add URL to list and invokes callback.
-exports.addUrlToList = function(string, callback) {
+exports.addUrlToList = function(url, callback) {
   // Appends URL to sites.txt.
-  fs.appendFile(exports.paths.list, `${string}\n`, err => {
+  fs.appendFile(exports.paths.list, `${url}\n`, err => {
     if (err) { response.write(`${err} \n`); }
   });
 
@@ -60,12 +61,19 @@ exports.addUrlToList = function(string, callback) {
 };
 
 // Checks to see if the URL page is archived.
-exports.isUrlArchived = function(string, callback) {
-  var filename = `${exports.paths.archivedSites}/${string}.html`;
+exports.isUrlArchived = function(url, callback) {
+  var filename = `${exports.paths.archivedSites}/${url}.html`;
 
   fs.exists(filename, exist => (exist) ? callback(true) : callback(false));
 };
 
-exports.downloadUrls = function() {
 
+exports.downloadUrls = function(website) {
+  getHtml(`http://${website}`, function(error, response, body) {
+    fs.writeFile(`${exports.paths.archivedSites}/${website}.html`, body, function(error) {
+      if (error) {
+        console.log(`${error}\n`);
+      }
+    });
+  });
 };

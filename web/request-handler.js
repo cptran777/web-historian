@@ -30,20 +30,33 @@ var handlePost = (request, response) => {
   request.on('data', data => inputUrl = parse.URL(data.toString().slice(4)));
 
   request.on('end', () => {
-    fs.readFile(archive.paths.list, 'utf8', (err, file) => {
-      if (file.indexOf(inputUrl) > -1) {
-        // If input URL exists in sites.txt, call handleGet to render it
-        handleGet(request, response, inputUrl);
-      } else {
-        // If input URL doesn't exist, append URL to sites.txt
-        fs.appendFile(archive.paths.list, `${inputUrl}\n`, err => {
-          if (err) { response.write(`${err} \n`); }
 
-          // Re-render index.html
-          handleGet(request, response);
-        });
-      }
+    archive.readListOfUrls(function() {
+      archive.isUrlInList(inputUrl, function(exists) {
+        if (exists) {
+          handleGet(request, response, inputUrl);
+        } else {
+          archive.addUrlToList(inputUrl, function() {
+            handleGet(request, response);
+          });
+        }
+      });
     });
+
+    // fs.readFile(archive.paths.list, 'utf8', (err, file) => { // ReadListofUrls
+    //   if (file.indexOf(inputUrl) > -1) { // callback -> isUrlInList
+    //     // If input URL exists in sites.txt, call handleGet to render it
+    //     handleGet(request, response, inputUrl); // <-- callback to isUrlInList
+    //   } else {
+    //     // If input URL doesn't exist, append URL to sites.txt
+    //     fs.appendFile(archive.paths.list, `${inputUrl}\n`, err => { // <-- addUrlToList callbackto isurlinlist
+    //       if (err) { response.write(`${err} \n`); } // <-- callback to AddUrlToList
+
+    //       // Re-render index.html
+    //       handleGet(request, response); // <-- get deleted
+    //     });
+    //   }
+    // });
 
   });
 };
