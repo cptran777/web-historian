@@ -1,4 +1,6 @@
 var archive = require('../helpers/archive-helpers');
+var CronJob = require('cron').CronJob;
+
 
 exports.updateArchives = () => {
   archive.readListOfUrls(array => {

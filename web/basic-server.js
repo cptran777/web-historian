@@ -2,6 +2,11 @@ var http = require('http');
 var handler = require('./request-handler');
 var initialize = require('./initialize.js');
 var htmlFetcher = require('../workers/htmlfetcher');
+var CronJob = require('cron').CronJob;
+
+new CronJob('10 * * * * *', function() {
+  htmlFetcher.updateArchives();
+}, null, true, 'America/Los_Angeles');
 
 // Why do you think we have this here?
 // HINT: It has to do with what's in .gitignore
@@ -14,7 +19,6 @@ var server = http.createServer(handler.handleRequest);
 if (module.parent) {
   module.exports = server;
 } else {
-  setInterval(htmlFetcher.updateArchives, 10000);
   server.listen(port, ip);
   console.log('Listening on http://' + ip + ':' + port);
 }
