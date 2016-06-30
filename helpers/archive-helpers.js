@@ -61,12 +61,9 @@ exports.addUrlToList = function(url, callback) {
 };
 
 // Checks to see if the URL page is archived.
-exports.isUrlArchived = function(url, callback) {
-  var filename = `${exports.paths.archivedSites}/${url}.html`;
-
-  fs.exists(filename, exist => (exist) ? callback(true) : callback(false));
+exports.isUrlArchived = function(path, callback) {
+  fs.exists(path, exist => (exist) ? callback(true) : callback(false));
 };
-
 
 exports.downloadUrls = function(website) {
   getHtml(`http://${website}`, function(error, response, body) {

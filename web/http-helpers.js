@@ -11,7 +11,23 @@ exports.headers = {
   'Content-Type': 'text/html'
 };
 
-exports.serveAssets = (response, asset, callback) => {
+var renderFile = (filepath, response) => {
+  fs.readFile(filepath, 'binary', function(err, file) {
+    // Return error 500 if there are errors reading file
+    if (err) {
+      response.writeHead(500, {'Content-Type': 'text/plain'});
+      response.write(`${err} \n`);
+      response.end();
+    } else {
+    // Load file into response, which renders it
+      response.writeHead(200, {'Content-Type': mime.lookup(filepath)});
+      response.write(file, 'binary');
+      response.end();
+    }
+  });
+};
+
+exports.serveAssets = (response, path, callback) => {
   
   /*************************************************************************
     Write some code here that helps serve up your static files!
@@ -19,26 +35,13 @@ exports.serveAssets = (response, asset, callback) => {
     css, or anything that doesn't change often.)
   *************************************************************************/
   
-  fs.exists(asset, exists => {
-    // If directory doesn't exist, return error 404  
-    if (!exists) {
-      response.writeHead(404, {'Content-Type': 'text/plain'});
-      response.write('404: Not found!');
-      response.end();
+  archive.isUrlArchived(path, function(exists) {
+    if (exists) {
+      // If HTML file exists for request, render to page.
+      renderFile(path, response);
     } else {
-      fs.readFile(asset, 'binary', function(err, file) {
-        // Return error 500 if there are errors reading file
-        if (err) {
-          response.writeHead(500, {'Content-Type': 'text/plain'});
-          response.write(`${err} \n`);
-          response.end();
-        } else {
-        // Load file into response
-          response.writeHead(200, {'Content-Type': mime.lookup(asset)});
-          response.write(file, 'binary');
-          response.end();
-        }
-      });
+      // If HTML file doesn't exist, render loading page.
+      renderFile(`${archive.paths.siteAssets}/loading.html`, response);
     }
   });
 };

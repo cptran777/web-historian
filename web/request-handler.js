@@ -5,15 +5,15 @@ var render = require('./http-helpers');
 var url = require('url');
 var parse = require('./parse');
 
-exports.handleRequest = (req, res) => {
-  if (req.method === 'GET') {
-    handleGet(req, res);
-  } else if (req.method === 'POST') {
-    handlePost(req, res);
+exports.handleRequest = (request, response) => {
+  if (request.method === 'GET') {
+    handleGet(request, response);
+  } else if (request.method === 'POST') {
+    handlePost(request, response);
   }
 };
 
-// Get local directory and render it
+// Render index or specific URL's page
 var handleGet = (request, response, inputUrl) => {
   var filename = inputUrl === undefined ? 
     `${archive.paths.siteAssets}/index.html` : 
@@ -30,34 +30,20 @@ var handlePost = (request, response) => {
   request.on('data', data => inputUrl = parse.URL(data.toString().slice(4)));
 
   request.on('end', () => {
-
+    // Search through URLs in sites.txt
     archive.readListOfUrls(function() {
       archive.isUrlInList(inputUrl, function(exists) {
         if (exists) {
+          // If URL exists, pass URL to handleGet to render
           handleGet(request, response, inputUrl);
         } else {
           archive.addUrlToList(inputUrl, function() {
+            // If URL doesn't exist, call handleGet w/o URL to render index
             handleGet(request, response);
           });
         }
       });
     });
-
-    // fs.readFile(archive.paths.list, 'utf8', (err, file) => { // ReadListofUrls
-    //   if (file.indexOf(inputUrl) > -1) { // callback -> isUrlInList
-    //     // If input URL exists in sites.txt, call handleGet to render it
-    //     handleGet(request, response, inputUrl); // <-- callback to isUrlInList
-    //   } else {
-    //     // If input URL doesn't exist, append URL to sites.txt
-    //     fs.appendFile(archive.paths.list, `${inputUrl}\n`, err => { // <-- addUrlToList callbackto isurlinlist
-    //       if (err) { response.write(`${err} \n`); } // <-- callback to AddUrlToList
-
-    //       // Re-render index.html
-    //       handleGet(request, response); // <-- get deleted
-    //     });
-    //   }
-    // });
-
   });
 };
 
