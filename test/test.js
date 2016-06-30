@@ -100,7 +100,7 @@ describe('archive helpers', function() {
       var counter = 0;
       var total = 2;
 
-      archive.isUrlInList('example1.com', function (exists) {
+      archive.isUrlInList('example1.com', function (exists /*true or false*/) {
         expect(exists).to.be.true;
         if (++counter === total) { done(); }
       });

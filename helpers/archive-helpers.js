@@ -35,18 +35,35 @@ exports.readListOfUrls = (callback) => {
   });
 };
 
-exports.isUrlInList = function() {
-  // check list to see if URL is in the list
-  exports.readListOfUrls();
+// Check list to see if URL is in the list
+exports.isUrlInList = function(string, callback) {
+  exports.readListOfUrls(function(array) {
+    if (array.indexOf(string) !== -1) {
+      callback(true);
+    } else {
+      callback(false);
+    }
+  });
 };
 
-exports.addUrlToList = function() {
-  // if URL is not in list, add URL to list
-  exports.isUrlInList();
+// Add URL to list and invokes callback.
+exports.addUrlToList = function(string, callback) {
+  // Appends URL to sites.txt.
+  fs.appendFile(exports.paths.list, `${string}\n`, err => {
+    if (err) { response.write(`${err} \n`); }
+  });
+
+  // Invoke callback if it exists
+  if (callback !== undefined) {
+    callback();
+  }
 };
 
-exports.isUrlArchived = function() {
-  
+// Checks to see if the URL page is archived.
+exports.isUrlArchived = function(string, callback) {
+  var filename = `${exports.paths.archivedSites}/${string}.html`;
+
+  fs.exists(filename, exist => (exist) ? callback(true) : callback(false));
 };
 
 exports.downloadUrls = function() {
